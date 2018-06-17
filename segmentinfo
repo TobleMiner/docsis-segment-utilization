@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+function error() {
+	(>&2 echo $@)
+}
+
+NUM_REGEX='^[0-9]+$'
+function ensure_number() {
+	if ! [[ "$1" =~ $NUM_REGEX ]]; then
+		error "$2 must be a number"
+		usage
+	fi
+}
+
+ADAPTER_REGEX='^[0-9]+\.[0-9]+$'
+function ensure_adapter() {
+	if ! [[ "$1" =~ $ADAPTER_REGEX ]]; then
+		error "$1 is not a valid adapter specification, must be <adapterid>.<frontendid>"
+		usage
+	fi
+}
+
+function usage() {
+	error "$0 [-a <adapter>] [-f <frontend>] <frequency>"
+	exit 1
+}
+
+function find_free_adapter() {
+	for adapter in "${adapters[@]}"; do
+		segmentpid=${adapter_alloc["$adapter"]}
+		if ! ps --pid "$segmentpid" &> /dev/null; then
+			echo "$adapter"
+			return 0
+		fi
+	done
+	return 1
+}
+
+frequencies=()
+adapters=()
+declare -gA adapter_alloc
+
+while getopts "a:f:" opt; do
+	case $opt in
+		a) ensure_adapter "$OPTARG"; adapters+=($OPTARG); adapter_alloc[$OPTARG]=free;;
+		f) ensure_number "$OPTARG" frequency; frequencies+=($OPTARG);;
+		*) usage;;
+	esac
+done
+
+for freq in "${frequencies[@]}"; do
+	while true; do
+		adapter=$(find_free_adapter)
+		if [[ $? -eq 0 ]]; then
+			data=(${adapter//./ })
+			segmentinfo_freq -a ${data[0]} -f ${data[1]} $freq &
+			adapter_alloc["$adapter"]=$!
+			break
+		fi
+		sleep 1
+	done
+done
+
+for adapter in "${!adapter_alloc[@]}"; do
+	while true; do
+		if ! ps --pid ${adapter_alloc["$adapter"]} &> /dev/null; then
+			break
+		fi
+		sleep 1
+	done
+done
