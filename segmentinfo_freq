@@ -22,8 +22,8 @@ function snoop() {
 		echo 0 | timeout 10 dvb-fe-tool -d DVBC/ANNEX_A -a $1 &> /dev/null
 	fi
 	timeout 10 dvbtune -f $2 -c $1 -s 6952 2> /dev/null
-	local samples=$(($3 * 10000))
-	timeout $(($3 + 2)) dvbsnoop -adapter $1 -s bandwidth 8190 -n $samples -hideproginfo
+	local t=$(($3 / 10000))
+	timeout $(($t + 2)) dvbsnoop -adapter $1 -s bandwidth 8190 -n $3 -hideproginfo
 }
 
 function cleanup() {
@@ -36,13 +36,13 @@ function cleanup() {
 
 adapter=0
 frontend=0
-interval=10
+samples=100000
 noinit=""
-while getopts "a:f:t:nh" opt; do
+while getopts "a:f:s:nh" opt; do
 	case $opt in
 		a) adapter="$OPTARG"; ensure_number "$adapter" adapter;;
 		f) frontend="$OPTARG"; ensure_number "$frontend" frontend;;
-		t) interval="$OPTARG"; ensure_number "$interval" interval;;
+		s) samples="$OPTARG"; ensure_number "$samples" samples;;
 		n) noinit="noinit";;
 		*) usage;;
 	esac
@@ -74,6 +74,6 @@ trap cleanup SIGINT SIGTERM EXIT
 
 echo 0 > /sys/module/dvb_core/parameters/dvb_powerdown_on_sleep
 
-kbps=$(snoop $adapter $freq $interval $noinit | tail -n 1 | sed -n 's/^.*Avrg:\s\([0-9\.,]\+\).*$/\1/p')
+kbps=$(snoop $adapter $freq $samples $noinit | tail -n 1 | sed -n 's/^.*Avrg:\s\([0-9\.,]\+\).*$/\1/p')
 
 echo $freq: $kbps
