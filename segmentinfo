@@ -40,11 +40,15 @@ frequencies=()
 adapters=()
 declare -gA adapter_alloc
 declare -gA adapter_opts
+samples=100000
+noinit=""
 
-while getopts "a:f:" opt; do
+while getopts "a:f:s:n" opt; do
 	case $opt in
 		a) ensure_adapter "$OPTARG"; adapters+=($OPTARG); adapter_alloc[$OPTARG]=0; adapter_opts[$OPTARG]="";;
 		f) ensure_number "$OPTARG" frequency; frequencies+=($OPTARG);;
+		s) ensure_number "$OPTARG" samples; samples=$OPTARG;;
+		n) noinit=noinit;;
 		*) usage;;
 	esac
 done
@@ -54,9 +58,11 @@ for freq in "${frequencies[@]}"; do
 		adapter=$(find_free_adapter)
 		if [[ $? -eq 0 ]]; then
 			data=(${adapter//./ })
-			segmentinfo_freq -a ${data[0]} -f ${data[1]} ${adapter_opts[$adapter]} $freq &
+			segmentinfo_freq -a ${data[0]} -f ${data[1]} -s $samples ${adapter_opts[$adapter]} $freq &
 			adapter_alloc[$adapter]=$!
-			adapter_opts[$adapter]="-n"
+			if [[ -n "$noinit" ]]; then
+				adapter_opts[$adapter]="-n"
+			fi
 			break
 		fi
 		sleep 1
