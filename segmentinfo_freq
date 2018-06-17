@@ -13,14 +13,17 @@ function ensure_number() {
 }
 
 function usage() {
-	error "$0 [-a <adapter>] [-f <frontend>] <frequency>"
+	error "$0 [-a <adapter>] [-f <frontend>] [-t <mesaurement interval>] <frequency>"
 	exit 1
 }
 
 function snoop() {
-	echo 0 | timeout 10 dvb-fe-tool -d DVBC/ANNEX_A -a $1 &> /dev/null
+	if [[ "$4" != noinit ]]; then
+		echo 0 | timeout 10 dvb-fe-tool -d DVBC/ANNEX_A -a $1 &> /dev/null
+	fi
 	timeout 10 dvbtune -f $2 -c $1 -s 6952 2> /dev/null
-	timeout 10 dvbsnoop -adapter $1 -s bandwidth 8190 -n 5000 -hideproginfo
+	local samples=$(($3 * 10000))
+	timeout $(($3 + 2)) dvbsnoop -adapter $1 -s bandwidth 8190 -n $samples -hideproginfo
 }
 
 function cleanup() {
@@ -33,10 +36,14 @@ function cleanup() {
 
 adapter=0
 frontend=0
-while getopts "a:f:" opt; do
+interval=10
+noinit=""
+while getopts "a:f:t:nh" opt; do
 	case $opt in
-		a) adapter=$OPTARG; ensure_number $adapter adapter;;
-		f) frontend=$OPTARG; ensure_number $frontend frontend;;
+		a) adapter="$OPTARG"; ensure_number "$adapter" adapter;;
+		f) frontend="$OPTARG"; ensure_number "$frontend" frontend;;
+		t) interval="$OPTARG"; ensure_number "$interval" interval;;
+		n) noinit="noinit";;
 		*) usage;;
 	esac
 done
@@ -67,7 +74,6 @@ trap cleanup SIGINT SIGTERM EXIT
 
 echo 0 > /sys/module/dvb_core/parameters/dvb_powerdown_on_sleep
 
-kbps=$(snoop $adapter $freq | tail -n 1 | sed -n 's/^.*Avrg:\s\([0-9\.,]\+\).*$/\1/p')
+kbps=$(snoop $adapter $freq $interval $noinit | tail -n 1 | sed -n 's/^.*Avrg:\s\([0-9\.,]\+\).*$/\1/p')
 
 echo $freq: $kbps
-
