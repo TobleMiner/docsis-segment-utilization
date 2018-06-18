@@ -21,7 +21,7 @@ function ensure_adapter() {
 }
 
 function usage() {
-	error "$0 [-a <adapter>] [-f <frontend>] <frequency>"
+	error "$0 [-a <adapter>] [-s <number of samples>] [-n] [frequency ...]"
 	exit 1
 }
 
@@ -46,11 +46,16 @@ noinit=""
 while getopts "a:f:s:n" opt; do
 	case $opt in
 		a) ensure_adapter "$OPTARG"; adapters+=($OPTARG); adapter_alloc[$OPTARG]=0; adapter_opts[$OPTARG]="";;
-		f) ensure_number "$OPTARG" frequency; frequencies+=($OPTARG);;
 		s) ensure_number "$OPTARG" samples; samples=$OPTARG;;
 		n) noinit=noinit;;
 		*) usage;;
 	esac
+done
+
+for i in `seq $OPTIND $#`; do
+	freq="${!i}"
+	ensure_number "$freq" frequency
+	frequencies+=($freq)
 done
 
 for freq in "${frequencies[@]}"; do
