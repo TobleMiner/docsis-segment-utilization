@@ -48,7 +48,7 @@ function update() {
 function config() {
 cat <<EOF
 graph_title KD Segmentauslastung DOCSIS Kiel-Wik
-graph_args --base 1024 -l 0 -u 400000
+graph_args --base 1000 -l 0 -u 400000
 graph_vlabel Bit/s
 graph_info Anzeige der Auslastung der Downstream Kanaele KD in Kiel-Wik
 graph_category docsis
