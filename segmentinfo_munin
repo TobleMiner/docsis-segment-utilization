@@ -10,7 +10,7 @@ DATAFILE_PART="$DATAFILE".part
 BC_PREFIX="scale=10;"
 
 function round() {
-	printf "%.0f" "$1"
+	printf "%.0f" "$(bc <<< "$BC_PREFIX $1 - 0.5")"
 }
 
 function color() {
@@ -19,13 +19,11 @@ function color() {
 	local count=$1
 	local index=$2
 	local angle="$(bc -lq <<< "$BC_PREFIX 360 / $count * $index")"
-#	echo "$angle"
-	local segment=$(round "$(bc -lq <<< "$BC_PREFIX $angle / 60 - 0.5")")
+	local segment=$(round "$(bc -lq <<< "$BC_PREFIX $angle / 60")")
 	local f="$(bc -lq <<< "$BC_PREFIX $angle / 60 - $segment")"
 	local p="$(bc -lq <<< "$BC_PREFIX $V * (1 - $S)")"
 	local q="$(bc -lq <<< "$BC_PREFIX $V * (1 - $S * $f)")"
 	local t="$(bc -lq <<< "$BC_PREFIX $V * (1 - $S * (1 - $f))")"
-#	echo "f: $f, p: $p, q: $q, t: $t"
 	local red; local green; local blue;
 	case $segment in
 		[06]) red=$V; green=$t; blue=$p;;
@@ -38,9 +36,7 @@ function color() {
 	red=$(round "$(bc -lq <<< "$BC_PREFIX $red * 255")")
 	green=$(round "$(bc -lq <<< "$BC_PREFIX $green * 255")")
 	blue=$(round "$(bc -lq <<< "$BC_PREFIX $blue * 255")")
-#	echo "$segment"
-#	echo "$red $green $blue"
-	printf "%02xr%02xg%02xb" $red $green $blue
+	printf "%02x%02x%02x" $red $green $blue
 }
 
 function update() {
@@ -66,13 +62,13 @@ EOF
 	for freq in $FREQUENCIES; do
 		freq=$(($freq / 1000000))
 		color=`color $num_freq $i`
-		echo "f.$freq.label $freq MHz"
+		echo "f$freq.label $freq MHz"
 		if [[ $i -eq 0 ]]; then
-			echo "f.$freq.draw AREA"
+			echo "f$freq.draw AREA"
 		else
-			echo "f.$freq.draw STACK"
+			echo "f$freq.draw STACK"
 		fi
-		echo "f.$freq.colour $color"
+		echo "f$freq.colour $color"
 		i=$((i + 1))
 	done
 }
@@ -83,7 +79,7 @@ function fetch() {
 		data=(${line//:/ })
 		freq=$((${data[0]} / 1000000))
 		kbits=${data[1]}
-		echo "f.$freq.value $kbits"
+		echo "f$freq.value $kbits"
 		if [[ -n "$kbits" ]]; then
 			sum="$(bc -lq <<< "$BC_PREFIX $sum + $kbits")"
 		fi
