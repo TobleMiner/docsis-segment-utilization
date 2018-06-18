@@ -26,6 +26,7 @@ function color() {
 	local t="$(bc -lq <<< "$BC_PREFIX $V * (1 - $S * (1 - $f))")"
 	local red; local green; local blue;
 	case $segment in
+		-0) :;&
 		[06]) red=$V; green=$t; blue=$p;;
 		1) red=$q; green=$V; blue=$p;;
 		2) red=$p; green=$V; blue=$t;;
