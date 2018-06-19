@@ -14,7 +14,7 @@ Initial idea from https://github.com/plenet/munin-plugins/blob/master/kdgsegment
 - dvbtune
 - dvbsnoop
 
-The corresponding Debian packages are:
+The corresponding packages on Debian Buster are:
 
 - bash
 - bc
