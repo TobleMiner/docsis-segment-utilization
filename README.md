@@ -1,5 +1,5 @@
-DOCSIS 3.0 Segment utilization
-==============================
+EuroDOCSIS 3.0 Segment utilization monitoring
+=============================================
 
 This set of bash scripts allows to monitor bandwidth utilization on a DOCSIS 3.0 TV cable segment and natively supports Munin.
 
