@@ -1,0 +1,7 @@
+[Unit]
+Description=Measure DOCSIS segment utilization
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/segmentinfo_munin update
+User=root
