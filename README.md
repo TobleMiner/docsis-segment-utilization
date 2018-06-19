@@ -2,7 +2,9 @@ EuroDOCSIS 3.0 Segment utilization monitoring
 =============================================
 
 This set of bash scripts allows to monitor bandwidth utilization on a EuroDOCSIS 3.0 TV cable segment and natively supports Munin.
+
 All further mentions of DOCSIS actually refer to EuroDOCSIS 3.0.
+
 Initial idea from https://github.com/plenet/munin-plugins/blob/master/kdgsegments
 
 # Dependencies
