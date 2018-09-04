@@ -46,9 +46,11 @@ function update() {
 }
 
 function config() {
+	local freqs=($FREQUENCIES)
+	local num_freq=${#freqs[@]}
 cat <<EOF
 graph_title KD Segmentauslastung DOCSIS Kiel-Wik
-graph_args --base 1000 -l 0 -u 1200000000 -X 6
+graph_args --base 1000 -l 0 -u $((num_freq * 50000000)) -X 6
 graph_vlabel Bit/s
 graph_info Anzeige der Auslastung der Downstream Kanaele KD in Kiel-Wik
 graph_category docsis
@@ -58,8 +60,6 @@ sum.colour 000000
 sum.cdef sum,1000,*
 EOF
 
-	local freqs=($FREQUENCIES)
-	local num_freq=${#freqs[@]}
 	local i=0
 	for freq in $FREQUENCIES; do
 		freq=$(($freq / 1000000))
