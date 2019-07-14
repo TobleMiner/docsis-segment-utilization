@@ -7,6 +7,11 @@ All further mentions of DOCSIS actually refer to EuroDOCSIS 3.0.
 
 Initial idea from https://github.com/plenet/munin-plugins/blob/master/kdgsegments
 
+
+Take a look inside `/web` for a simple php script utilizing the data gathered by this software for a DOCSIS overview page:
+![odroid web example](img/odroid_web.jpg)
+
+
 # Dependencies
 - Bash >= 4.0
 - bc
