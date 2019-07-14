@@ -8,6 +8,7 @@
         color: #eeeeee;
         overflow: hidden;
         margin: 0;
+        font-family: sans-serif;
       }
 
       h1, h2 {
